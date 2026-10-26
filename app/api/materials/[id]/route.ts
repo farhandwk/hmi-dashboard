@@ -1,9 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> } // params sekarang berupa Promise
+) {
   try {
-    const { id } = params;
+    // Tunggu (await) params terbuka sebelum mengambil id
+    const resolvedParams = await params;
+    const id = resolvedParams.id;
     
     // Menarik 1 baris spesifik berdasarkan ID
     const { data, error } = await supabase

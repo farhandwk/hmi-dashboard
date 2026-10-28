@@ -3,25 +3,22 @@ import { supabase } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
-    // Membaca JSON payload dari ESP32
+    // Membaca payload JSON dari ESP32
     const body = await request.json();
-    
-    // Menyimpan data ke Supabase
+    const { operator_id, part_id, qty, status } = body;
+
+    // Insert ke tabel khusus HMI yang baru saja dibuat
     const { data, error } = await supabase
-      .from('production_logs')
-      .insert([
-        {
-          operator: body.operator,
-          material: body.material,
-          qty: body.qty,
-          status: body.status,
-        }
-      ]);
+      .from('hmi_production_logs')
+      .insert([{ operator_id, part_id, qty, status }])
+      .select()
+      .single();
 
     if (error) throw error;
 
-    return NextResponse.json({ message: 'Data lot berhasil disimpan!' }, { status: 201 });
+    // Mengembalikan status 201 Created jika berhasil masuk DB
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Gagal menyimpan data' }, { status: 500 });
+    return NextResponse.json({ error: 'Gagal mencatat lot produksi HMI' }, { status: 500 });
   }
 }
